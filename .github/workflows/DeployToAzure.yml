@@ -1,1 +1,39 @@
 
+name: chessStaticTest
+
+on: [push]
+
+env:
+  AZURE_RESOURCE_GROUP: dev
+  BLOB_STORAGE_ACCOUNT_NAME: testwithchess
+
+jobs:
+  build:
+  runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout the source code
+      uses: actions/checkout@v2
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+     
+    # Deploy to storage using CLI
+    - name: Deploy to storage using CLI
+      uses: azure/CLI@v1
+      with:
+        azcliversion: latest
+        inlineScript: | 
+          ls
+          # show azure account being used
+          az account show
+          # az storage account upload
+          az storage blob upload-batch --account-name ${{ env.BLOB_STORAGE_ACCOUNT_NAME }} -s wwwroot -d \$web
+
+    # Azure logout
+    - name: logout
+      run: |
+            az logout
+      if: always()
